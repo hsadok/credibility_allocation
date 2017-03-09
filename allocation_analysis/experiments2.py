@@ -3,75 +3,19 @@
 # Since we have the types and allocations we can make lots of cool experiments
 from collections import defaultdict
 import click
-import math
 import itertools
 from scipy.stats.stats import pearsonr
-
 import pandas as pd
 import numpy as np
 from os import listdir, path
-import matplotlib
-
-matplotlib.use('Agg')
-
-
-#### Dummy to replace seaborn
-class MayBeCalled(object):
-    def __call__(self, *args, **kwargs):
-        return None
-
-class Dummy(object):
-    def __getattr__(self, attr):
-        return MayBeCalled()
-
-    def __setattr__(self, attr, val):
-        pass
-
-sns = Dummy()
-
-# import seaborn as sns
+import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
 
-from file_name import FileName
-
-sns.set_palette(sns.color_palette("Paired", 10))
-
+from helpers.file_name import FileName
+from helpers.allocation import Allocation
 
 i18n = {'memory': u"Memória", 'cpu': "CPU"}
-
-sns.set_style('ticks')
-
-
-class Allocation(object):
-    def __init__(self, data_path):
-        files = sorted(listdir(data_path))
-        files = filter(lambda x: x[-4:] == '.csv', files)
-        alloc_files = filter(lambda x: x.startswith('alloc'), files)
-        alloc_files = map(FileName, alloc_files)
-        alloc_files.sort(key=lambda f: f.resource_percentage)
-
-        user_needs_files = filter(lambda x: x.startswith('user_needs'), files)
-        user_needs_files = map(FileName, user_needs_files)
-        user_needs_files = {n.attributes['resource_type']: path.join(
-            data_path, n.name) for n in user_needs_files}
-        self._allocations = defaultdict(list)
-        for f in alloc_files:
-            params_dict = f.attributes
-            resource_type = params_dict['resource_type']
-            params_dict['file_name'] = path.join(data_path, f.name)
-            params_dict['types_file_name'] = user_needs_files[resource_type]
-            self._allocations[resource_type].append(params_dict)
-        self.user_type_files = user_needs_files
-
-    def resource_types(self):
-        return self._allocations.keys()
-
-    def __getattr__(self, name):
-        return self._allocations[name]
-
-    def iteritems(self):
-        return self._allocations.iteritems()
 
 
 # r_i vs Parcela de necessidades atendidas para vários gamas
@@ -136,7 +80,6 @@ def request_fulfilment(data_path):
         plt.xlabel(u"Quantidade de %s ($r_i$/média)" % i18n[resource_type])
         plt.ylabel(u"Requisições Satisfeitas (%)")
         plt.legend(loc=4)
-        sns.despine()
         plt.savefig('fulfilment-%s.pdf' % resource_type, bbox_inches='tight')
         plt.close()
 
@@ -170,7 +113,6 @@ def resource_vs_utility(data_path):
         plt.xlabel(u"Quantidade de %s ($r_i$/média)" % i18n[resource_type])
         plt.ylabel(u"Média das Utilidades dos Usuários")
         plt.legend(loc=4)
-        sns.despine()
         plt.savefig('mean_utility-%s.pdf' % resource_type, bbox_inches='tight')
         plt.close()
 
@@ -267,7 +209,6 @@ def resource_utilization_bar_plot(data_path):
         plt.xlabel(u"Quantidade de %s ($r_i$/média)" % i18n[resource_type])
         plt.ylabel(u"Iterações (%)")
         # plt.legend(title=u'Recursos', bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.)
-        sns.despine()
         plt.savefig('resource_utilization-%s.pdf' % resource_type,
                     bbox_inches='tight', dpi=1200)
         plt.close()
@@ -410,8 +351,6 @@ def conflict_resources(data_path):
 
             conflict_deficit = conflict_deficit.as_matrix().flatten()
 
-            # sns.distplot(type_sum.as_matrix(), kde=False, rug=True)
-
             print allocation_mean, allocation_mean.shape
             print conflict_deficit, conflict_deficit.shape
             data_by_res_percent[a['resource_percentage']][a['delta']] = \
@@ -494,7 +433,6 @@ def allocation_smoothness(data_path):
         plt.ylabel(u"Estabilidade")
         plt.ylim([0.0, 1])
         plt.legend(loc=4)
-        sns.despine()
         plt.savefig('autocorr_median-%s.pdf' % resource_type, bbox_inches='tight')
         plt.close()
 
@@ -572,7 +510,6 @@ def smoothness_by_parts(data_path):
         plt.ylabel(u"Estabilidade Média")
         plt.ylim([0.2, 1])
         plt.legend(loc=4)
-        sns.despine()
         plt.savefig('autocorr_chunk_mean-%s.pdf' % resource_type,
                     bbox_inches='tight')
         plt.close()
@@ -582,11 +519,11 @@ def smoothness_by_parts(data_path):
 @click.argument('data_path',
                 type=click.Path(exists=True, file_okay=False, readable=True))
 def main(data_path):
-    # request_fulfilment(data_path)
-    # resource_vs_utility(data_path)
+    request_fulfilment(data_path)
+    resource_vs_utility(data_path)
     # credibility_distribution(data_path)
-    # allocation_smoothness(data_path)
-    # resource_utilization_bar_plot(data_path)
+    allocation_smoothness(data_path)
+    resource_utilization_bar_plot(data_path)
     resources_received_vs_given(data_path)
     # # request_justice(data_path)
     # # conflict_resources(data_path)
