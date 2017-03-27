@@ -26,7 +26,7 @@ Run it for usage information::
 
 For further help in a particular subcommand you can run::
 
-    python credibility_allocation --help
+    python credibility_allocation SUBCOMMAND --help
 
 
 Subcommands
