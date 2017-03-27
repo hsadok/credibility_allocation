@@ -1,6 +1,5 @@
 import unittest
-# from allocate import *
-from hyperplane_allocation import allocate
+from allocators.lex_allocation import allocate
 
 
 def check_allocation(desire, output):

@@ -6,7 +6,7 @@ import pandas as pd
 from progress.bar import Bar
 from progress.spinner import Spinner
 
-from allocators.hyperplane_allocation import allocate
+from allocators.lex_allocation import allocate
 from helpers.file_name import FileName
 
 
