@@ -20,6 +20,10 @@ Clone this repo::
 
     git clone git@github.com:hugombarreto/credibility_allocation.git
 
+Install the dependencies::
+
+    pip install -r credibility_allocation/requirements.txt
+
 Run it for usage information::
 
     python credibility_allocation --help
